@@ -62,4 +62,17 @@ config.vbguest.auto_update = false
       ansible.verbose = "v"
     end
   end 
+
+  config.vm.define "repository_machine" do |repo|
+    repo.vm.box = "debian/bookworm64"
+    repo.vm.hostname = "repositoryMachine"
+    repo.vm.network "private_network", ip: "192.168.56.21"
+    repo.vm.synced_folder ".", "/vagrant"
+    repo.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "repository.yml"
+      ansible.inventory_path = "inventory.ini"
+      ansible.limit = "repository_machine"
+      ansible.verbose = "v"
+    end
+  end
 end

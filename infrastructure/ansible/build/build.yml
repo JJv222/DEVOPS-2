@@ -11,6 +11,11 @@
 
   environment:
     GITHUB_PAT: "{{ GITHUB_PAT }}"
+    NEXUS_HOST: "{{ nexus_host }}"
+    NEXUS_PORT: "{{ nexus_http_port }}"
+    NEXUS_USER: "{{ nexus_admin_user }}"
+    NEXUS_PASSWORD: "{{ nexus_admin_password }}"
+    NEXUS_REPO: "{{ nexus_raw_repo_name }}"
 
   tasks:
     - name: Install packages
@@ -25,6 +30,17 @@
           - maven
           - openjdk-21-jdk-headless
         state: present
+
+    - name: Copy environment variables /etc/profile.d/nexus_env.sh
+      copy:
+        dest: /etc/profile.d/nexus_env.sh
+        mode: '0644'
+        content: |
+          export NEXUS_HOST={{ nexus_host }}
+          export NEXUS_PORT={{ nexus_http_port }}
+          export NEXUS_REPO={{ nexus_raw_repo_name }}
+          export NEXUS_USER={{ nexus_admin_user }}
+          export NEXUS_PASSWORD={{ nexus_admin_password }}
 
     - name: Add NodeSource repository for Node.js 20 (idempotent-ish)
       shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
