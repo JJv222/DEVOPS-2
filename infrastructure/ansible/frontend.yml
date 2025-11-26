@@ -1,0 +1,121 @@
+---
+- name: Provision Frontend
+  hosts: all
+  become: true
+
+  vars:
+    app_src_dir: /app          # kod źródłowy (shared)
+    app_run_dir: /opt/app      # katalog do build/run (lokalny ext4)
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - rsync
+          - nginx
+        state: present
+
+    - name: Ensure source and run dirs exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: "0775"
+      loop:
+        - "{{ app_src_dir }}"
+        - "{{ app_run_dir }}"
+
+    # - name: Add NodeSource repository for Node.js 20 (idempotent-ish)
+    #   shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    #   args:
+    #     creates: /etc/apt/sources.list.d/nodesource.list
+
+    # - name: Install Angular CLI globally
+    #   community.general.npm:
+    #     name: "@angular/cli"
+    #     global: yes
+    #     state: latest
+
+    # --- SYNC KODU Z /app DO /opt/app ---
+    # - name: Sync sources from {{ app_src_dir }} to {{ app_run_dir }}
+    #   synchronize:
+    #     src: "{{ app_src_dir }}/"
+    #     dest: "{{ app_run_dir }}/"
+    #     delete: yes
+    #     rsync_opts:
+    #       - "--exclude=node_modules"
+    #       - "--exclude=dist"
+
+    - name: Ensure ownership for run dir
+      file:
+        path: "{{ app_run_dir }}"
+        state: directory
+        owner: vagrant
+        group: vagrant
+        recurse: yes
+
+    # --- NPM INSTALL JAKO VAGRANT, Z --unsafe-perm ---
+    # - name: Clean node_modules in run dir (fresh install)
+    #   file:
+    #     path: "{{ app_run_dir }}/node_modules"
+    #     state: absent
+
+    # - name: Install npm dependencies in run dir
+    #   become_user: vagrant
+    #   args:
+    #     chdir: "{{ app_run_dir }}"
+    #   shell: |
+    #     npm ci --no-audit --no-fund --unsafe-perm
+
+    # - name: Ensure esbuild binary is executable (workaround for EACCES)
+    #   file:
+    #     path: "{{ app_run_dir }}/node_modules/@esbuild/linux-x64/bin/esbuild"
+    #     state: file
+    #     mode: "0755"
+    #   ignore_errors: yes
+
+    - name: Create log file for frontend
+      file:
+        path: /var/log/frontend.log
+        state: touch
+        owner: vagrant
+        group: vagrant
+        mode: "0644"
+
+    # --- SYSTEMD SERVICE DLA DEV SERWERA ---
+    # - name: Install systemd service for Angular dev server
+    #   copy:
+    #     dest: /etc/systemd/system/frontend.service
+    #     mode: "0644"
+    #     content: |
+    #       [Unit]
+    #       Description=Angular Dev Server (port {{ app_port }})
+    #       After=network.target
+
+    #       [Service]
+    #       Type=simple
+    #       User=vagrant
+    #       WorkingDirectory={{ app_run_dir }}
+    #       Environment=CHOKIDAR_USEPOLLING=1
+    #       Environment=API_URL=http://{{ backend_host }}:{{ backend_port }}
+    #       ExecStart=/usr/bin/npm run start -- --host 0.0.0.0 --port {{ app_port }}
+    #       Restart=always
+    #       RestartSec=2
+    #       StandardOutput=append:/var/log/frontend.log
+    #       StandardError=append:/var/log/frontend.log
+
+    #       [Install]
+    #       WantedBy=multi-user.target
+
+    # - name: Reload systemd and enable+restart service
+    #   systemd:
+    #     name: frontend
+    #     daemon_reload: yes
+    #     enabled: yes
+    #     state: restarted

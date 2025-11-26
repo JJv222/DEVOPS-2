@@ -1,0 +1,71 @@
+---
+- name: Provision Build Machine
+  hosts: build_machine
+  become: true
+
+  vars:
+    main_dir : "/home/vagrant/build"
+    scripts_dir: "/home/vagrant/scripts"
+    artifacts_dir: "/home/vagrant/build/artifacts"
+    repo_dir: "/home/vagrant/build/repo"
+
+  environment:
+    GITHUB_PAT: "{{ GITHUB_PAT }}"
+
+  tasks:
+    - name: Install packages
+      apt:
+        update_cache: yes
+        name:
+          - git
+          - curl
+          - unzip
+          - tar
+          - ca-certificates
+          - maven
+          - openjdk-21-jdk-headless
+        state: present
+
+    - name: Add NodeSource repository for Node.js 20 (idempotent-ish)
+      shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+        
+    - name: Install Angular CLI globally
+      community.general.npm:
+        name: "@angular/cli"
+        global: yes
+        state: latest
+
+    - name: Ensure build dirs
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+        owner: vagrant
+        group: vagrant
+      loop:
+        - "{{ main_dir }}"
+        - "{{ scripts_dir }}"
+        - "{{ artifacts_dir }}"
+        - "{{ repo_dir }}"
+
+    - name: Copy build.sh to build machine
+      copy:
+        src: shared/build.sh
+        dest: /{{scripts_dir}}/build.sh
+        mode: "0755"
+        owner: vagrant
+        group: vagrant
+
+    - name: Copy deploy.sh to build machine
+      copy:
+        src: shared/deploy.sh
+        dest: /{{scripts_dir}}/deploy.sh
+        mode: "0755"
+        owner: vagrant
+        group: vagrant

@@ -1,0 +1,114 @@
+[
+    {
+        "id": 1,
+        "title": "The Matrix",
+        "description": "A computer hacker learns about the true nature of reality.",
+        "image": "img.png",
+        "screenings": [
+            {
+                "id": 2,
+                "dateTime": "2025-05-27T22:28:39.171981",
+                "filmTitle": "The Matrix",
+                "roomName": "Room B",
+                "filmImage": "img.png",
+                "durationMinutes": 120,
+                "seats": []
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "title": "Inception",
+        "description": "A thief who steals corporate secrets through dream-sharing technology.",
+        "image": "img_1.png",
+        "screenings": [
+            {
+                "id": 3,
+                "dateTime": "2025-05-27T23:28:39.171981",
+                "filmTitle": "Inception",
+                "roomName": "Room C",
+                "filmImage": "img_1.png",
+                "durationMinutes": 150,
+                "seats": []
+            },
+            {
+                "id": 4,
+                "dateTime": "2025-05-27T21:28:39.171981",
+                "filmTitle": "Inception",
+                "roomName": "Room D",
+                "filmImage": "img_1.png",
+                "durationMinutes": 150,
+                "seats": []
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "title": "Interstellar",
+        "description": "A team of explorers travel through a wormhole in space.",
+        "image": "img_2.png",
+        "screenings": [
+            {
+                "id": 5,
+                "dateTime": "2025-05-27T20:28:39.171981",
+                "filmTitle": "Interstellar",
+                "roomName": "Room A",
+                "filmImage": "img_2.png",
+                "durationMinutes": 165,
+                "seats": []
+            },
+            {
+                "id": 6,
+                "dateTime": "2025-05-27T18:28:39.171981",
+                "filmTitle": "Interstellar",
+                "roomName": "Room B",
+                "filmImage": "img_2.png",
+                "durationMinutes": 165,
+                "seats": []
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "title": "The Godfather",
+        "description": "The aging patriarch of an organized crime dynasty transfers control to his reluctant son.",
+        "image": "img_3.png",
+        "screenings": [
+            {
+                "id": 7,
+                "dateTime": "2025-05-27T19:28:39.171981",
+                "filmTitle": "The Godfather",
+                "roomName": "Room C",
+                "filmImage": "img_3.png",
+                "durationMinutes": 175,
+                "seats": []
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "title": "Pulp Fiction",
+        "description": "The lives of two mob hitmen, a boxer, and others intertwine in four tales of violence.",
+        "image": "img_4.png",
+        "screenings": [
+            {
+                "id": 8,
+                "dateTime": "2025-05-27T17:28:39.171981",
+                "filmTitle": "Pulp Fiction",
+                "roomName": "Room D",
+                "filmImage": "img_4.png",
+                "durationMinutes": 154,
+                "seats": []
+            },
+            {
+                "id": 9,
+                "dateTime": "2025-05-27T16:28:39.171981",
+                "filmTitle": "Pulp Fiction",
+                "roomName": "Room A",
+                "filmImage": "img_4.png",
+                "durationMinutes": 154,
+                "seats": []
+            }
+        ]
+    }
+]

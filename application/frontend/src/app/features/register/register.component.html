@@ -1,0 +1,87 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2><i class="fas fa-user-plus"></i> Zarejestruj się</h2>
+    <form (ngSubmit)="register()" #registerForm="ngForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope input-icon"></i>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+            placeholder="Wprowadź e-mail"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Imię</label>
+        <div class="input-wrapper">
+          <i class="fas fa-user input-icon"></i>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            [(ngModel)]="username"
+            required
+            placeholder="Wprowadź imię"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="surname">Nazwisko</label>
+        <div class="input-wrapper">
+          <i class="fas fa-user input-icon"></i>
+          <input
+            type="text" id="surname"
+            name="surname" [(ngModel)]="surname"
+            required placeholder="Wprowadź nazwisko"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Numer telefonu</label>
+        <div class="input-wrapper">
+          <i class="fas fa-phone input-icon"></i>
+          <input
+            type="tel" id="phone" name="phone"
+            pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}" required
+            placeholder="Wprowadź numer telefonu"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <div class="password-wrapper">
+          <i class="fas fa-lock input-icon"></i>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            placeholder="Wprowadź hasło"
+          />
+          <i
+            class="fas toggle-password"
+            [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="togglePassword()"
+            role="button"
+            tabindex="0"
+          ></i>
+        </div>
+      </div>
+      <button type="submit" class="submit-button">Zarejestruj się</button>
+      <div class="register-link">
+        Masz już konto?
+        <a  (click)="goToLogin()" >Zaloguj się</a>
+      </div>
+    </form>
+  </div>
+</div>

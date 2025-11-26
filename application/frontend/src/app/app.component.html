@@ -1,0 +1,18 @@
+<header class="header">
+  <div class="header-left">
+    <h1 (click)="goToHome()" class="clickable-logo">Kino Oniko</h1>
+  </div>
+
+  <div class="header-right">
+    <button *ngIf="!isLoggedIn" (click)="goToLogin()" class="login-button">Zaloguj się</button>
+
+    <ng-container *ngIf="isLoggedIn">
+      <button *ngIf="isWorker" (click)="goToPanel()" class="login-button">Panel</button>
+      <button (click)="logOut()" class="login-button">Wyloguj się</button>
+    </ng-container>
+  </div>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

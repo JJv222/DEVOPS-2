@@ -1,0 +1,1 @@
+{"virtualbox":{"/app":{"mount_options":["dmode=775","fmode=775","uid=1000","gid=1000","_netdev"],"guestpath":"/app","hostpath":"D:/Dane/PWR/sem2/devops/devops2025-p2-cz08-2-Kuba/infrastructure/ansible/build/shared","disabled":false,"__vagrantfile":true}}}

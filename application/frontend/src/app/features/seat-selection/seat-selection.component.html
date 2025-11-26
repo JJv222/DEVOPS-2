@@ -1,0 +1,27 @@
+<h2>Wybierz miejsca</h2>
+
+<div class="screen">Ekran</div>
+<div class="seats-rows">
+  <div *ngFor="let row of seatGrid" class="seat-row">
+    <div
+      *ngFor="let seat of row"
+      class="seat"
+      [ngClass]="{
+        occupied: seat?.occupied,
+        selected: seat && selectedSeatsNumbers.includes(seat.id),
+        empty: !seat
+      }"
+      (click)="seat && toggleSeat(seat)"
+    >
+      <ng-container *ngIf="seat; else emptySeat">
+        {{ seat.rowNumber }}-{{ seat.seatNumber }}
+      </ng-container>
+      <ng-template #emptySeat></ng-template>
+    </div>
+  </div>
+</div>
+
+
+<button class="submit-button" (click)="confirm()" [disabled]="selectedSeats.length === 0">
+  Zarezerwuj
+</button>

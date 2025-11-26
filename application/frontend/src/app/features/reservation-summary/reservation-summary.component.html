@@ -1,0 +1,52 @@
+<div class="summary-container">
+    <div class="summary-title">Podsumowanie rezerwacji</div>
+
+    <div *ngIf="reservationErrorMessage" class="reservation-error">
+        {{ reservationErrorMessage }}
+    </div>
+
+    <div class="price-info">
+        <b>Obowiązujące ceny biletów:</b>
+        <ul class="price-list">
+            <li><span class="price-label">Normalny:</span> {{STANDARD_PRICE}} zł</li>
+            <li><span class="price-label">Wyższy standard:</span> {{HIGHT_PRICE}} zł <span
+                    style="font-size:0.98em;font-weight:400;color:#888;">(od rzędu {{HIGHT_PRICE_ROW}} włącznie)</span>
+            </li>
+        </ul>
+    </div>
+    <div class="price-info">
+        <b>Informacje o wybranym seansie:</b>
+        <ul class="price-list">
+            <li><span class="price-label">Sala:</span> {{screening?.roomName}}</li>
+            <li><span class="price-label">Film:</span> {{screening?.filmTitle}}</li>
+            <li><span class="price-label">Data:</span> {{screening?.dateTime | date: 'dd.MM.yyyy'}}</li>
+            <li><span class="price-label">Godzina:</span> {{screening?.dateTime | date: 'HH:mm'}}</li>
+            <li><span class="price-label">Czas trwania:</span> {{screening?.durationMinutes}} min</li>
+        </ul>
+    </div>
+    <div *ngIf="selectedSeats && selectedSeats.length > 0; else brakWyboru">
+        <div class="summary-section">
+            <div class="summary-label">Wybrałeś miejsca:</div>
+            <ul class="summary-list">
+                <li *ngFor="let seat of selectedSeats">
+                    <span>Rząd</span> <span class="seat-number">{{seat.rowNumber}}</span>,
+                    <span>Miejsce</span> <span class="seat-number">{{seat.seatNumber}}</span>
+                    <span class="seat-price"> - {{getSeatPrice(seat)}} zł</span>
+                </li>
+            </ul>
+        </div>
+        <div class="summary-section summary-price">
+            <span>RAZEM DO ZAPŁATY:</span>
+            <span>{{summaryPrice | number: '1.2-2'}} zł</span>
+        </div>
+        <button *ngIf="!reservationErrorMessage; else wrocButton" class="summary-btn"
+            (click)="confirmReservation()">POTWIERDŹ REZERWACJĘ</button>
+        <ng-template #wrocButton>
+            <button class="summary-btn" (click)="goBack()">Wróć do wyboru miejsc</button>
+        </ng-template>
+    </div>
+
+    <ng-template #brakWyboru>
+        <p style="color:red;">Nie wybrano żadnych miejsc. <a routerLink="/">Wróć do wyboru seansu</a></p>
+    </ng-template>
+</div>

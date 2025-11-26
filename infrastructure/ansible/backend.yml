@@ -1,0 +1,204 @@
+---
+- name: Provision Backend
+  hosts: backend
+  become: true
+  vars:
+    app_dir: "/opt/backend"
+    app_user: "backend"
+    app_group: "backend"
+
+    # Rozpakujemy JDK do /opt/jdk-21 (ze strip-components=1),
+    # więc od razu mamy /opt/jdk-21/bin/java
+    jdk_archive: "/app/jdk-21_linux-x64_bin.tar.gz"
+    jdk_root: "/opt/jdk-21"
+    jdk_url: "https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz"
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Ensure base packages
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - tar
+          - gzip
+          - maven
+          - netcat-openbsd
+          - python3-apt
+        state: present
+
+    - name: Create system user/group
+      ansible.builtin.user:
+        name: "{{ app_user }}"
+        system: yes
+        shell: /usr/sbin/nologin
+        create_home: no
+
+    - name: Ensure dirs exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+      loop:
+        - "{{ app_dir }}"
+        - "{{ jdk_root }}"
+
+    - name: Download JDK 21
+      ansible.builtin.get_url:
+        url: "{{ jdk_url }}"
+        dest: "{{ jdk_archive }}"
+        mode: "0644"
+        force: no
+
+    - name: Check JDK archive present
+      ansible.builtin.stat:
+        path: "{{ jdk_archive }}"
+      register: jdk
+
+    - name: Fail if JDK missing
+      ansible.builtin.fail:
+        msg: "Brak {{ jdk_archive }} — wrzuć JDK 21 tar.gz do ./Project-Cinema/backend/"
+      when: not jdk.stat.exists
+
+    - name: Extract JDK to {{ jdk_root }}
+      ansible.builtin.unarchive:
+        src: "{{ jdk_archive }}"
+        dest: "{{ jdk_root }}"
+        remote_src: yes
+        extra_opts:
+          - --strip-components=1
+
+    - name: Set JAVA_HOME in /etc/environment
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        line: "JAVA_HOME={{ jdk_root }}"
+        create: yes
+        state: present
+
+    - name: Install alternatives - java
+      ansible.builtin.alternatives:
+        name: java
+        link: /usr/bin/java
+        path: "{{ jdk_root }}/bin/java"
+        priority: 2100
+
+    - name: Install alternatives - javac
+      ansible.builtin.alternatives:
+        name: javac
+        link: /usr/bin/javac
+        path: "{{ jdk_root }}/bin/javac"
+        priority: 2100
+
+    - name: Install alternatives - jar
+      ansible.builtin.alternatives:
+        name: jar
+        link: /usr/bin/jar
+        path: "{{ jdk_root }}/bin/jar"
+        priority: 2100
+
+    - name: Assert pom.xml exists
+      ansible.builtin.stat:
+        path: /app/pom.xml
+      register: pom
+
+    - name: Fail if pom.xml missing
+      ansible.builtin.fail:
+        msg: "Brak /app/pom.xml — czy na pewno poprawnie zamontowałeś projekt do /app?"
+      when: not pom.stat.exists
+
+    - name: Build with Maven (prefer wrapper only if complete)
+      ansible.builtin.shell: |
+        set -euo pipefail
+        cd /app
+        export MAVEN_OPTS="-Xms128m -Xmx768m -XX:+UseSerialGC"
+        if [ -x ./mvnw ] && [ -f .mvn/wrapper/maven-wrapper.properties ]; then
+          echo "Using Maven Wrapper (./mvnw)"
+          ./mvnw -B -DskipTests clean package spring-boot:repackage
+        else
+          echo "Wrapper incomplete or missing — falling back to system Maven"
+          mvn -B -DskipTests clean package spring-boot:repackage
+        fi
+      args:
+        executable: /bin/bash
+
+
+    - name: Find built JAR
+      ansible.builtin.shell: |
+        set -e
+        ls -1 /app/target/*SNAPSHOT.jar 2>/dev/null | head -n1 || ls -1 /app/target/*.jar | head -n1
+      args:
+        executable: /bin/bash
+      register: jar_file
+      changed_when: false
+
+    - name: Fail if JAR not found
+      ansible.builtin.fail:
+        msg: "Nie znaleziono zbudowanego JAR w /app/target"
+      when: jar_file.stdout == ""
+
+    - name: Copy JAR to {{ app_dir }}/app.jar
+      ansible.builtin.copy:
+        src: "{{ jar_file.stdout }}"
+        dest: "{{ app_dir }}/app.jar"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+        remote_src: true
+
+    - name: Write env file for systemd
+      ansible.builtin.copy:
+        dest: "/etc/default/{{ app_name }}"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          # Environment for {{ app_name }}
+          DB_HOST={{ db_host }}
+          DB_PORT={{ db_port }}
+          DB_NAME={{ db_name }}
+          DB_USER={{ db_user }}
+          DB_PASSWORD={{ db_password }}
+
+    - name: Write systemd unit
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Unit]
+          Description={{ app_name }} (Spring Boot)
+          After=network.target
+
+          [Service]
+          Type=simple
+          EnvironmentFile=/etc/default/{{ app_name }}
+          User={{ app_user }}
+          WorkingDirectory={{ app_dir }}
+          ExecStart={{ jdk_root }}/bin/java \
+            -Dserver.address=0.0.0.0 \
+            -Dserver.port=${SERVER_PORT} \
+            -Dspring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME} \
+            -Dspring.datasource.username=${DB_USER} \
+            -Dspring.datasource.password=${DB_PASSWORD} \
+            -jar {{ app_dir }}/app.jar
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: systemd daemon-reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable + start service
+      ansible.builtin.systemd:
+        name: "{{ app_name }}"
+        enabled: true
+        state: started

@@ -1,0 +1,38 @@
+<div class="summary-result-wrapper">
+  <h2>Rezerwacja zakończona sukcesem!</h2>
+  <div class="ticket-list">
+    <div class="screening-info-block" *ngIf="screening">
+
+      <b>Informacje o seansie:</b>
+      <ul class="screening-info-list">
+        <li><span class="info-label">Sala:</span> {{ screening.roomName }}</li>
+        <li><span class="info-label">Film:</span> {{ screening.filmTitle }}</li>
+        <li><span class="info-label">Data:</span> {{ screening.dateTime | date: 'dd.MM.yyyy' }}</li>
+        <li><span class="info-label">Godzina:</span> {{ screening.dateTime | date: 'HH:mm' }}</li>
+        <li><span class="info-label">Czas trwania:</span> {{ screening.durationMinutes }} min</li>
+      </ul>
+    </div>
+    <div class="ticket-subtitle">Oto Twoje bilety:</div>
+    <div class="ticket-card" *ngFor="let ticket of reservationsResponse">
+      <div class="ticket-info-row">
+        <span class="label">Kod rezerwacji:</span>
+        <span class="token">{{ ticket.reservationCode }}</span>
+      </div>
+      <div class="ticket-info-row">
+        <span class="label">Film:</span>
+        <span>{{ ticket.film }}</span>
+      </div>
+      <div class="ticket-info-row">
+        <span class="label">Sala:</span>
+        <span>{{ ticket.room }}</span>
+      </div>
+      <div class="ticket-info-row">
+        <span class="label">Rząd:</span>
+        <span>{{ ticket.row }}</span>
+        <span class="label ml">Miejsce:</span>
+        <span>{{ ticket.column }}</span>
+      </div>
+    </div>
+  </div>
+  <button class="back-btn" (click)="router.navigate(['/'])">Powrót do strony głównej</button>
+</div>

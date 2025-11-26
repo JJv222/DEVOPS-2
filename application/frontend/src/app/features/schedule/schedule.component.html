@@ -1,0 +1,26 @@
+<!-- Pasek z dniami -->
+<div class="day-selector">
+  <button *ngFor="let d of days" (click)="selectDay(d.date)">
+    <span class="day-label">{{ d.dayLabel }}</span><br>
+    <span class="date-label">{{ d.dateLabel }}</span>
+  </button>
+</div>
+
+
+<!-- Lista filmów jako karty -->
+<div *ngFor="let film of filteredFilms" class="film-card">
+  <div class="card-content">
+    <img [src]="film.pictureUrl" alt="{{ film.title }}" class="poster" />
+
+    <div class="card-info">
+      <h3>{{ film.title }}</h3>
+      <p>{{ film.description }}</p>
+
+      <div class="hours">
+        <button *ngFor="let s of film.screenings" (click)="goToScreening(s.id)">
+          {{ s.dateTime | date: 'HH:mm' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

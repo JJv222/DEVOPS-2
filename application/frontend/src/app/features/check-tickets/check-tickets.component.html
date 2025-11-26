@@ -1,0 +1,27 @@
+<h2>Sprawdzanie biletu</h2>
+
+<div class="ticket-form">
+  <input type="text" [formControl]="ticketCodeControl" placeholder="Wpisz kod biletu" class="ticket-input" required />
+</div>
+<div *ngIf="responseErrorMessage" class="check-error">
+  {{ responseErrorMessage }}
+</div>
+
+<div *ngIf="ticketInfo" class="ticket-card">
+  <div *ngIf="ticketInfo" class="ticket-card">
+    <h3>Status:
+      <span [ngClass]="getStatusClass(ticketInfo.status)">
+        {{ ticketInfo.status }}
+      </span>
+    </h3>
+    <p><strong>Film:</strong> {{ ticketInfo.film }}</p>
+    <p><strong>Sala:</strong> {{ ticketInfo.room }}</p>
+    <p><strong>Rząd:</strong> {{ ticketInfo.row }}, Miejsce: {{ ticketInfo.column }}</p>
+    <p><strong>Kod rezerwacji:</strong> {{ ticketInfo.reservationCode }}</p>
+
+    <div *ngIf="ticketInfo.status == STATUS" class="ticket-status-change">
+      <button class="delete-ticket-btn" (click)="changeTicketStatus()">Skasuj bilet</button>
+    </div>
+  </div>
+
+</div>

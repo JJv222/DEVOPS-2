@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  cinemadb:
+    container_name: cinemadb
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cinema
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+      start_period: 10s
+    networks:
+      - cinema
+
+  cinema:
+    image: piiscinema/backend:latest
+    container_name: cinema_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      cinemadb:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: cinema
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://cinemadb:5432/cinema"
+    networks:
+      - cinema
+
+  frontend:
+    image: piiscinema/frontend:latest
+    container_name: cinema_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - cinema
+    depends_on:
+      - cinema
+
+networks:
+  cinema:
+    driver: "bridge"

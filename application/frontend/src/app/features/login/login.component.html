@@ -1,0 +1,51 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2><i class="fas fa-sign-in-alt"></i> Zaloguj się</h2>
+
+    <form (ngSubmit)="login()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="username">Login</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope input-icon"></i>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            [(ngModel)]="email"
+            required
+            placeholder="Wprowadź login"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <div class="password-wrapper">
+          <i class="fas fa-lock input-icon"></i>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            placeholder="Wprowadź hasło"
+          />
+          <i
+            class="fas toggle-password"
+            [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="togglePassword()"
+            role="button"
+            tabindex="0"
+          ></i>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-button">Zaloguj się</button>
+
+      <!-- <div class="register-link">
+        Nie masz konta?
+        <a routerLink="/register" (click)="gotoRegister()" >Zarejestruj się</a>
+      </div> -->
+    </form>
+  </div>
+</div>
