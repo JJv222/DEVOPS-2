@@ -16,6 +16,13 @@
     NEXUS_USER: "{{ nexus_admin_user }}"
     NEXUS_PASSWORD: "{{ nexus_admin_password }}"
     NEXUS_REPO: "{{ nexus_raw_repo_name }}"
+    # BACKEND_HOST: "{{ backend_host }}"
+    # FRONTEND_HOST: "{{ frontend_host }}"
+    # DB_HOST: "{{ db_host }}"
+    # DB_PORT: "{{ db_port }}"
+    # DB_NAME: "{{ db_name }}"
+    # DB_USER: "{{ db_user }}"
+    # DB_PASSWORD: "{{ db_password }}"
 
   tasks:
     - name: Install packages
@@ -41,6 +48,15 @@
           export NEXUS_REPO={{ nexus_raw_repo_name }}
           export NEXUS_USER={{ nexus_admin_user }}
           export NEXUS_PASSWORD={{ nexus_admin_password }}
+          export BACKEND_HOST={{ backend_host }}
+          export FRONTEND_HOST={{ frontend_host }}
+          export DB_HOST={{ db_host }}
+          export DB_PORT={{ db_port }}
+          export DB_NAME={{ db_name }}
+          export DB_USER={{ db_user }}
+          export DB_PASSWORD={{ db_password }}
+          export FRONTEND_PORT={{ frontend_port }}
+          export API_URL="http://{{ backend_host }}:{{ backend_port }}"
 
     - name: Add NodeSource repository for Node.js 20 (idempotent-ish)
       shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -

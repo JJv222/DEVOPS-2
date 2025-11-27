@@ -3,13 +3,13 @@
   hosts: all
   become: true
 
-  vars:
-    app_src_dir: /app          # kod źródłowy (shared)
-    app_run_dir: /opt/app      # katalog do build/run (lokalny ext4)
+  # vars:
+  #   app_src_dir: /app          # kod źródłowy (shared)
+  #   app_run_dir: /opt/app      # katalog do build/run (lokalny ext4)
 
   tasks:
     - name: Update apt cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install required packages
@@ -20,27 +20,34 @@
           - nginx
         state: present
 
-    - name: Ensure source and run dirs exist
-      file:
-        path: "{{ item }}"
-        state: directory
-        owner: vagrant
-        group: vagrant
-        mode: "0775"
-      loop:
-        - "{{ app_src_dir }}"
-        - "{{ app_run_dir }}"
+    # - name: Ensure source and run dirs exist
+    #   file:
+    #     path: "{{ item }}"
+    #     state: directory
+    #     owner: vagrant
+    #     group: vagrant
+    #     mode: "0775"
+    #   loop:
+    #     - "{{ app_src_dir }}"
+    #     - "{{ app_run_dir }}"
 
-    # - name: Add NodeSource repository for Node.js 20 (idempotent-ish)
-    #   shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    #   args:
-    #     creates: /etc/apt/sources.list.d/nodesource.list
+    - name: Add NodeSource repository for Node.js 20 (idempotent-ish)
+      shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+      args:
+        creates: /etc/apt/sources.list.d/nodesource.list
 
-    # - name: Install Angular CLI globally
-    #   community.general.npm:
-    #     name: "@angular/cli"
-    #     global: yes
-    #     state: latest
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+
+
+    - name: Install Angular CLI globally
+      community.general.npm:
+        name: "@angular/cli"
+        global: yes
+        state: latest
 
     # --- SYNC KODU Z /app DO /opt/app ---
     # - name: Sync sources from {{ app_src_dir }} to {{ app_run_dir }}
@@ -52,13 +59,13 @@
     #       - "--exclude=node_modules"
     #       - "--exclude=dist"
 
-    - name: Ensure ownership for run dir
-      file:
-        path: "{{ app_run_dir }}"
-        state: directory
-        owner: vagrant
-        group: vagrant
-        recurse: yes
+    # - name: Ensure ownership for run dir
+    #   file:
+    #     path: "{{ app_run_dir }}"
+    #     state: directory
+    #     owner: vagrant
+    #     group: vagrant
+    #     recurse: yes
 
     # --- NPM INSTALL JAKO VAGRANT, Z --unsafe-perm ---
     # - name: Clean node_modules in run dir (fresh install)
@@ -80,13 +87,13 @@
     #     mode: "0755"
     #   ignore_errors: yes
 
-    - name: Create log file for frontend
-      file:
-        path: /var/log/frontend.log
-        state: touch
-        owner: vagrant
-        group: vagrant
-        mode: "0644"
+    # - name: Create log file for frontend
+    #   file:
+    #     path: /var/log/frontend.log
+    #     state: touch
+    #     owner: vagrant
+    #     group: vagrant
+    #     mode: "0644"
 
     # --- SYSTEMD SERVICE DLA DEV SERWERA ---
     # - name: Install systemd service for Angular dev server
