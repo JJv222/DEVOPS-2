@@ -33,7 +33,7 @@
         group: root
         mode: "0644"
         content: |
-          APP_PORT={{ app_port }}
+          APP_PORT={{ backend_port }}
           DB_HOST={{ db_host }}
           DB_PORT={{ db_port }}
           DB_NAME={{ db_name }}
@@ -57,7 +57,7 @@
           EnvironmentFile=/etc/default/{{ app_name }}
           ExecStart=/usr/bin/java \
             -Dserver.address=0.0.0.0 \
-            -Dserver.port={{ app_port }} \
+            -Dserver.port={{ backend_port }} \
             -Dspring.datasource.url=jdbc:postgresql://{{ db_host }}:{{ db_port }}/{{ db_name }} \
             -Dspring.datasource.username={{ db_user }} \
             -Dspring.datasource.password={{ db_password }} \
