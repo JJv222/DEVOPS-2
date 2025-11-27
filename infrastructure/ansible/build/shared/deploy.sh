@@ -91,6 +91,48 @@ echo "Frontend deployed to ${FRONTEND_DEPLOY_DIR} on ${FRONTEND_HOST}"
 # 3) DEPLOY BACKEND
 ########################################
 
+echo
+echo "===> Deploy BACKEND to ${BACKEND_HOST}..."
+
+# Upewnij się, że katalog istnieje i ma właściciela vagrant
+ssh "${SSH_USER}@${BACKEND_HOST}" "
+  set -e
+  sudo mkdir -p '${BACKEND_DEPLOY_DIR}'
+  sudo chown -R ${SSH_USER}:${SSH_USER} '${BACKEND_DEPLOY_DIR}'
+"
+
+# Skopiuj backend.jar na maszynę backend
+scp "${BACKEND_JAR_LOCAL}" "${SSH_USER}@${BACKEND_HOST}:/tmp/backend.jar"
+
+echo "===> Start BACKEND on ${BACKEND_HOST}..."
+
+ssh "${SSH_USER}@${BACKEND_HOST}" "
+  set -e
+  mkdir -p '${BACKEND_DEPLOY_DIR}'
+  mv /tmp/backend.jar '${BACKEND_DEPLOY_DIR}/backend.jar'
+  cd '${BACKEND_DEPLOY_DIR}'
+  nohup java \
+    -Dserver.address=0.0.0.0 \
+    -Dserver.port=${BACKEND_PORT} \
+    -Dspring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME} \
+    -Dspring.datasource.username=${DB_USER} \
+    -Dspring.datasource.password=${DB_PASSWORD} \
+    -jar backend.jar > backend.log 2>&1 &
+"
+
+echo "Backend should be running on ${BACKEND_HOST}, log: ${BACKEND_DEPLOY_DIR}/backend.log"
+echo "Backend deployed to ${BACKEND_DEPLOY_DIR} on ${BACKEND_HOST}"
+
+
+echo "===> DEPLOY FINISHED SUCCESSFULLY."
+
+
+
+
+# ########################################
+# # 3) DEPLOY BACKEND
+# ########################################
+
 # echo
 # echo "===> Deploy BACKEND to ${BACKEND_HOST}..."
 
@@ -115,5 +157,3 @@ echo "Frontend deployed to ${FRONTEND_DEPLOY_DIR} on ${FRONTEND_HOST}"
 
 
 # echo "Backend deployed to ${BACKEND_DEPLOY_DIR} on ${BACKEND_HOST}"
-
-echo "===> DEPLOY FINISHED SUCCESSFULLY."

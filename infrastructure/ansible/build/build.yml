@@ -1,6 +1,6 @@
 ---
 - name: Provision Build Machine
-  hosts: build_machine
+  hosts: build
   become: true
 
   vars:

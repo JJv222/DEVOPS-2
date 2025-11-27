@@ -1,6 +1,6 @@
 ---
 - name: Repository machine - Nexus OSS for cinema artifacts
-  hosts: repository_machine
+  hosts: Artifact
   become: true
 
   vars:

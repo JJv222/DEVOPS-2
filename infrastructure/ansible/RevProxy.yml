@@ -1,0 +1,67 @@
+---
+- name: Provision Reverse Proxy (nginx)
+  hosts: revproxy
+  become: true
+
+  tasks:
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create nginx site config for cinema
+      copy:
+        dest: /etc/nginx/sites-available/cinema.conf
+        mode: "0644"
+        content: |
+          server {
+              listen 80;
+              server_name _;
+
+              # Frontend (Angular) - serwowany z maszyny frontendowej
+              location / {
+                  proxy_pass http://{{ frontend_host }}:{{ frontend_port }}/;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              }
+
+              # Backend API
+              location /api/ {
+                  proxy_pass http://{{ backend_host }}:{{ backend_port }}/;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              }
+          }
+
+    - name: Enable cinema site
+      file:
+        src: /etc/nginx/sites-available/cinema.conf
+        dest: /etc/nginx/sites-enabled/cinema.conf
+        state: link
+        force: yes
+
+    - name: Remove default nginx site if exists
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Test nginx configuration
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Show nginx test output
+      debug:
+        var: nginx_test.stdout_lines
+
+    - name: Ensure nginx is enabled and restarted
+      service:
+        name: nginx
+        state: restarted
+        enabled: yes
