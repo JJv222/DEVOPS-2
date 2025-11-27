@@ -15,19 +15,67 @@
           - curl
           - tar
           - unzip
-          - openjdk-21-jdk-headless          
+          - openjdk-21-jdk-headless
         state: present
 
-    - name: Write env file for systemd
+    - name: Ensure backend directory exists
+      ansible.builtin.file:
+        path: /opt/cinema/backend
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: "0755"
+
+    - name: Write env file for backend (systemd)
       ansible.builtin.copy:
-        dest: "/etc/profile.d/{{ app_name }}.sh"
+        dest: "/etc/default/{{ app_name }}"
         owner: root
         group: root
         mode: "0644"
         content: |
-          # Environment for {{ app_name }}
-          export DB_HOST={{ db_host }}
-          export DB_PORT={{ db_port }}
-          export DB_NAME={{ db_name }}
-          export DB_USER={{ db_user }}
-          export DB_PASSWORD={{ db_password }}
+          APP_PORT={{ app_port }}
+          DB_HOST={{ db_host }}
+          DB_PORT={{ db_port }}
+          DB_NAME={{ db_name }}
+          DB_USER={{ db_user }}
+          DB_PASSWORD={{ db_password }}
+
+    - name: Write systemd unit
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Cinema Backend
+          After=network.target
+
+          [Service]
+          User=vagrant
+          WorkingDirectory=/opt/cinema/backend
+          EnvironmentFile=/etc/default/{{ app_name }}
+          ExecStart=/usr/bin/java \
+            -Dserver.address=0.0.0.0 \
+            -Dserver.port={{ app_port }} \
+            -Dspring.datasource.url=jdbc:postgresql://{{ db_host }}:{{ db_port }}/{{ db_name }} \
+            -Dspring.datasource.username={{ db_user }} \
+            -Dspring.datasource.password={{ db_password }} \
+            -jar backend.jar
+          Restart=always
+          RestartSec=5
+          StandardOutput=append:/var/log/{{ app_name }}.log
+          StandardError=append:/var/log/{{ app_name }}.log
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: systemd daemon-reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable service (jar dojdzie w deploy.sh)
+      ansible.builtin.systemd:
+        name: "{{ app_name }}"
+        enabled: true
+        state: stopped
